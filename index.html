@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cooling Fan Game</title>
+  <style>
+    body {
+      margin: 0;
+      background: #101827;
+      color: white;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 30px 15px;
+    }
+
+    .fan {
+      font-size: 110px;
+      margin: 30px auto;
+      display: inline-block;
+    }
+
+    button {
+      padding: 14px 25px;
+      margin: 8px;
+      border: none;
+      border-radius: 10px;
+      font-size: 18px;
+    }
+
+    #start { background: #22c55e; }
+    #stop { background: #ef4444; color: white; }
+  </style>
+</head>
+<body>
+  <h1>Cooling Fan Game</h1>
+  <p>Turn the fan on and off!</p>
+
+  <div class="fan" id="fan">🌀</div>
+  <p id="status">Fan is OFF</p>
+
+  <button id="start" onclick="startFan()">START</button>
+  <button id="stop" onclick="stopFan()">STOP</button>
+
+  <script>
+    let rotation = 0;
+    let timer = null;
+
+    function startFan() {
+      if (timer !== null) return;
+
+      document.getElementById("status").textContent = "Fan is ON";
+
+      timer = setInterval(() => {
+        rotation += 30;
+        document.getElementById("fan").style.transform =
+          `rotate(${rotation}deg)`;
+      }, 100);
+    }
+
+    function stopFan() {
+      clearInterval(timer);
+      timer = null;
+      document.getElementById("status").textContent = "Fan is OFF";
+    }
+  </script>
+</body>
+</html>
