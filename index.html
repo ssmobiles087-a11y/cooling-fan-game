@@ -101,14 +101,6 @@
     }
     #message { min-height: 28px; color: #facc15; font-weight: bold; }
     .hint { color: #cbd5e1; font-size: 14px; }
-  @keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
   </style>
 </head>
 <body>
@@ -179,6 +171,63 @@
       document.getElementById("score").textContent = score;
       document.getElementById("wins").textContent = wins;
     }
+  
   </script>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
+  import {
+    getAuth,
+    onAuthStateChanged
+  } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
+  import {
+    getFirestore,
+    doc,
+    setDoc,
+    getDoc
+  } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyC6niMqZYU584SR3KkeT_O1R18pyebYf_A",
+  authDomain: "cooling-fan-d899a.firebaseapp.com",
+  projectId: "cooling-fan-d899a",
+  storageBucket: "cooling-fan-d899a.firebasestorage.app",
+  messagingSenderId: "471536819410",
+  appId: "1:471536819410:web:15ee6d8ca3d1efd7d7a10b",
+  measurementId: "G-B61XGBZ8H2"
+};
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      console.log("Signed in:", user.uid);
+    } else {
+      console.log("No user signed in");
+    }
+  });
+
+  window.saveGameResult = async function (score, wins) {
+    const user = auth.currentUser;
+
+    if (!user) {
+      alert("Please sign in first.");
+      return;
+    }
+
+    const ref = doc(db, "players", user.uid);
+    const oldData = await getDoc(ref);
+    const previous = oldData.exists() ? oldData.data() : {};
+
+    await setDoc(ref, {
+      email: user.email || null,
+      score: (previous.score || 0) + score,
+      wins: (previous.wins || 0) + wins
+    }, { merge: true });
+
+    alert("Game result saved!");
+  };
+</script>
 </body>
 </html>
