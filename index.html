@@ -2,66 +2,174 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Cooling Fan Game</title>
   <style>
+    * { box-sizing: border-box; }
     body {
       margin: 0;
+      min-height: 100vh;
       background: #101827;
       color: white;
       font-family: Arial, sans-serif;
       text-align: center;
-      padding: 30px 15px;
+      padding: 24px 12px;
     }
-
+    h1 { color: #67e8f9; }
+    .arena {
+      width: 280px;
+      height: 280px;
+      margin: 25px auto;
+      position: relative;
+      border: 3px solid #334155;
+      border-radius: 50%;
+      background: radial-gradient(circle, #263449, #0b1220);
+    }
     .fan {
-      font-size: 110px;
-      margin: 30px auto;
-      display: inline-block;
+      position: absolute;
+      inset: 35px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #94a3b8 0 8%, transparent 9%);
+      animation: spin 1s linear infinite;
     }
-
-    button {
-      padding: 14px 25px;
-      margin: 8px;
-      border: none;
-      border-radius: 10px;
+    .blade {
+      position: absolute;
+      left: 42%;
+      top: 4%;
+      width: 16%;
+      height: 44%;
+      background: linear-gradient(90deg, #38bdf8, #e0f2fe, #0284c7);
+      border-radius: 80% 20% 60% 30%;
+      transform-origin: 50% 105%;
+      box-shadow: 0 0 12px #38bdf8;
+    }
+    .blade:nth-child(2) { transform: rotate(120deg); }
+    .blade:nth-child(3) { transform: rotate(240deg); }
+    .hub {
+      position: absolute;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: #e2e8f0;
+      border: 5px solid #64748b;
+      left: calc(50% - 17px);
+      top: calc(50% - 17px);
+    }
+    .pointer {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      transform: rotate(0deg);
+      pointer-events: none;
+    }
+    .pointer::before {
+      content: "★";
+      position: absolute;
+      top: -15px;
+      left: calc(50% - 16px);
+      color: #facc15;
+      font-size: 30px;
+      text-shadow: 0 0 12px #facc15;
+    }
+    .target {
+      position: absolute;
+      top: -7px;
+      left: calc(50% - 7px);
+      width: 14px;
+      height: 14px;
+      border: 3px solid white;
+      background: #22c55e;
+      border-radius: 50%;
+      z-index: 2;
+    }
+    .controls button {
+      border: 0;
+      border-radius: 12px;
+      padding: 14px 26px;
+      margin: 6px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+    #start { background: #22c55e; color: #052e16; }
+    #stop { background: #ef4444; color: white; }
+    .stats {
+      display: flex;
+      justify-content: center;
+      gap: 28px;
+      margin: 20px;
       font-size: 18px;
     }
-
-    #start { background: #22c55e; }
-    #stop { background: #ef4444; color: white; }
+    #message { min-height: 28px; color: #facc15; font-weight: bold; }
+    .hint { color: #cbd5e1; font-size: 14px; }
   </style>
 </head>
 <body>
-  <h1>Cooling Fan Game</h1>
-  <p>Turn the fan on and off!</p>
+  <h1>COOLING FAN GAME</h1>
+  <p>Stop the star at the green target!</p>
 
-  <div class="fan" id="fan">🌀</div>
-  <p id="status">Fan is OFF</p>
+  <div class="arena">
+    <div class="target"></div>
+    <div class="fan" id="fan">
+      <div class="blade"></div>
+      <div class="blade"></div>
+      <div class="blade"></div>
+      <div class="hub"></div>
+    </div>
+    <div class="pointer" id="pointer"></div>
+  </div>
 
-  <button id="start" onclick="startFan()">START</button>
-  <button id="stop" onclick="stopFan()">STOP</button>
+  <div class="stats">
+    <div>Score: <span id="score">0</span></div>
+    <div>Wins: <span id="wins">0</span></div>
+  </div>
+
+  <div class="controls">
+    <button id="start" onclick="startGame()">START</button>
+    <button id="stop" onclick="stopGame()">STOP</button>
+  </div>
+  <p id="message">Press START to play</p>
+  <p class="hint">Stop when the star reaches the green target.</p>
 
   <script>
-    let rotation = 0;
+    let angle = 0;
+    let running = false;
+    let score = 0;
+    let wins = 0;
     let timer = null;
+    const targetAngle = 0;
 
-    function startFan() {
-      if (timer !== null) return;
-
-      document.getElementById("status").textContent = "Fan is ON";
-
+    function startGame() {
+      if (running) return;
+      running = true;
+      document.getElementById("message").textContent = "Fan spinning...";
       timer = setInterval(() => {
-        rotation += 30;
-        document.getElementById("fan").style.transform =
-          `rotate(${rotation}deg)`;
-      }, 100);
+        angle = (angle + 6) % 360;
+        document.getElementById("pointer").style.transform =
+          `rotate(${angle}deg)`;
+      }, 30);
     }
 
-    function stopFan() {
+    function stopGame() {
+      if (!running) {
+        document.getElementById("message").textContent =
+          "Press START first!";
+        return;
+      }
+      running = false;
       clearInterval(timer);
       timer = null;
-      document.getElementById("status").textContent = "Fan is OFF";
+
+      const distance = Math.min(angle, 360 - angle);
+      if (distance <= 12) {
+        score += 100;
+        wins += 1;
+        document.getElementById("message").textContent = "YOU WIN! +100";
+      } else {
+        document.getElementById("message").textContent =
+          "Not quite! Try again.";
+      }
+      document.getElementById("score").textContent = score;
+      document.getElementById("wins").textContent = wins;
     }
   </script>
 </body>
